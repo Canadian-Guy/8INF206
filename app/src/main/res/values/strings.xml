@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">AutthTest</string>
+    <!-- Facebook application ID and custom URL scheme (app ID prefixed by 'fb'). -->
+    <string name="facebook_application_id" translatable="false">441041963296979
+</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb441041963296979
+</string>
+    <string name="adapterBtnDelete">Delete</string>
+    <string name="btnSelectImage">Choisir une image</string>
+    <string name="btnConfirmer">Archiver</string>
+</resources>
