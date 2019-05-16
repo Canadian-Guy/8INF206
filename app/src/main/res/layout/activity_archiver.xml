@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:focusableInTouchMode="true"
     tools:context=".ArchiverActivity">
 
     <ListView
@@ -14,6 +15,14 @@
         android:layout_weight="1">
 
     </ListView>
+
+    <EditText
+        android:id="@+id/editTextDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Courte description (optionel)"
+        android:inputType="textPersonName" />
 
     <ImageView
         android:id="@+id/imageViewPreview"
@@ -29,9 +38,23 @@
         android:text="@string/btnSelectImage" />
 
     <Button
-        android:id="@+id/ButtonConfirm"
+        android:id="@+id/buttonConfirm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="onButtonConfirmClicked"
         android:text="@string/btnConfirmer" />
+
+    <RelativeLayout
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+    </RelativeLayout>
+
 </LinearLayout>

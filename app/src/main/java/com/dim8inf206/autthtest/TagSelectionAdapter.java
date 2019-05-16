@@ -10,27 +10,41 @@ import android.widget.CheckBox;
 import java.util.ArrayList;
 
 public class TagSelectionAdapter extends ArrayAdapter<Tag> {
-
     private Context mContext;
-    int mResource;
+    private int mResource;
+    private LayoutInflater inflater;
 
     public TagSelectionAdapter(Context context, int resource, ArrayList<Tag> objects){
         super(context, resource, objects);
         mContext = context;
         mResource = resource;
+        inflater = LayoutInflater.from(mContext);
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        String tagName = getItem(position).getTagName();
-        Tag tag = new Tag(tagName);
+    public View getView(final int position, View convertView, ViewGroup parent) {
 
-        LayoutInflater inflater = LayoutInflater.from(mContext);
-        convertView = inflater.inflate(mResource, parent, false);
+        ViewHolder holder;
 
-        CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.checkBoxTagSelection);
-        checkBox.setText(tagName);
+        if(convertView == null){
+            convertView = inflater.inflate(R.layout.adapter_selection_tags, null);
+            holder = new ViewHolder();
+            holder.tagCheckBox = (CheckBox) convertView.findViewById(R.id.checkBoxTagSelection);
+            convertView.setTag(holder);
+        }
+        else{
+            holder = (ViewHolder) convertView.getTag();
+        }
 
+        Tag tag = getItem(position);
+        holder.tagCheckBox.setText(tag.getTagName());
+        holder.tagCheckBox.setChecked(tag.isSelected);
         return convertView;
+    }
+
+
+
+    static class ViewHolder{
+        private CheckBox tagCheckBox;
     }
 }

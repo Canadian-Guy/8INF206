@@ -1,9 +1,9 @@
 package com.dim8inf206.autthtest;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -11,12 +11,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.firebase.ui.auth.data.model.User;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -33,27 +35,21 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.Authenticator;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.UUID;
 
-/*
-* TODO:
-* Archiver un objet photo dans la realtime database
-* quand une photo est mise sur storage.
+/*TODO:
 *
-* Afficher les tags dans une listView et permetre
-* de les selectionner pour les appliquer a la photo
+* S'assurer de bloquer les caracteres interdits
+* dans la boite de texte pour la description
+*
 * */
 
 public class ArchiverActivity extends AppCompatActivity {
 
     private ArrayList<Tag> tags = new ArrayList<>();
-    private DatabaseReference databaseReference;
     private ListView mListView;
     private TagSelectionAdapter adapter;
     private ImageView imageView;
@@ -65,16 +61,15 @@ public class ArchiverActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+        Log.v("DIM", "***** ON CREATE *****");
         setContentView(R.layout.activity_archiver);
-
+        //references
         user = FirebaseAuth.getInstance().getCurrentUser();
-        databaseReference = FirebaseDatabase.getInstance().getReference(user.getUid() + "_Tags");
-        mListView = findViewById(R.id.listViewTags);
+        DatabaseReference databaseTagsReference = FirebaseDatabase.getInstance().getReference(user.getUid() + "_Tags");
 
-        storageReference.child(user.getUid()+"/test.png");
-        Log.v("DIM","User: " + user.getUid());
+        mListView = findViewById(R.id.listViewTags);
+        storageReference.child(user.getUid()+"/test.png"); // DEBUG - TESTING
+        Log.v("DIM","User: " + user.getUid());  //DEBUG
         imageView = findViewById(R.id.imageViewPreview);
 
         ValueEventListener dataListener = new ValueEventListener() {
@@ -85,9 +80,11 @@ public class ArchiverActivity extends AppCompatActivity {
                 for (DataSnapshot ds : dataSnapshot.getChildren()){
                     tmpString = (String) ds.getValue(true);
                     tags.add(new Tag(tmpString));
-                    Log.v("DIM", "TAGS ACTIVITY: " + ds.getKey() + " " + ds.getValue()+" and here is the current list" + tags.toString());
+                    //Log.v("DIM", "TAGS ACTIVITY: " + ds.getKey() + ": " + ds.getValue()+" and here is the current list" + tags.toString());
                 }
+                //Les tags ne devraient pas changer, mais s'ils changent, la liste sera rafraichie.
                 refreshListView();
+                Log.v("DIM", "***** LIST REFRESHED *****");
             }
 
             @Override
@@ -96,13 +93,50 @@ public class ArchiverActivity extends AppCompatActivity {
             }
         };
 
-        databaseReference.addValueEventListener(dataListener);
+        databaseTagsReference.addListenerForSingleValueEvent(dataListener);
         adapter = new TagSelectionAdapter(this, R.layout.adapter_selection_tags, tags);
         mListView.setAdapter(adapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                tags.get(i).switchSelection();
+                Log.v("DIM", "CHECKBOX " + tags.get(i).getTagName() + " SET TO " + tags.get(i).isSelected);
+                adapter.notifyDataSetChanged();
+            }
+        });
 
+        if(savedInstanceState != null) {
+            tags = savedInstanceState.getParcelableArrayList("tags");
+        }
+        Log.v("DIM", "***** VALUE SHOULD HAVE BEEN RESTORED *****");
+
+        super.onCreate(savedInstanceState);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState){
+        Log.v("DIM", "***** ON SAVE *****");
+        //Sauvegarde de l'etat des tags
+            savedInstanceState.putParcelableArrayList("tags", tags);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState){
+        Log.v("DIM", "***** ON RESTORE *****");
+        //Set chaque checkbox a son ancienne valeure
+        tags = savedInstanceState.getParcelableArrayList("tags");
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+
     public void onButtonSelectClicked(View view){
+        //Fermer le clavier, solution trouvee sur https://stackoverflow.com/questions/1109022/close-hide-the-android-soft-keyboard
+        View possiblyTheEditText = this.getCurrentFocus();
+        if (possiblyTheEditText != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(possiblyTheEditText.getWindowToken(), 0);
+        }
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -126,31 +160,57 @@ public class ArchiverActivity extends AppCompatActivity {
     }
 
 
-    public void onButtonConfirmClicked(View view) throws FileNotFoundException {
+    public void onButtonConfirmClicked(View view){
+        //S'il n'y a pas d'image, on cancel!
+        if(imageView.getDrawable() == null){
+            Toast.makeText(getApplicationContext(), "Veuillez choisir une photo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //Fermer le clavier, solution trouvee sur https://stackoverflow.com/questions/1109022/close-hide-the-android-soft-keyboard
+        View possiblyTheEditText = this.getCurrentFocus();
+        if (possiblyTheEditText != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(possiblyTheEditText.getWindowToken(), 0);
+        }
+        //On indique a l'utilisateur qu'il y a un chargement
+        findViewById(R.id.buttonConfirm).setVisibility(View.GONE);
+        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+        //Code pris dans la doc pour imageView -> Storage
         imageView.setDrawingCacheEnabled(true);
         imageView.buildDrawingCache();
         bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
-        storageReference = storage.getReference().child(user.getUid()+"test.jpg");
+        storageReference = storage.getReference().child(user.getUid() + "/" + UUID.randomUUID() + ".jpg" );
         UploadTask uploadTask = storageReference.putBytes(data);
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
-                // Handle unsuccessful uploads
+                Log.v("DIM", exception.getMessage());
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
-                // ...
+                storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        EditText tmpEditText = (EditText) findViewById(R.id.editTextDescription);
+                        String tmpDescription = tmpEditText.getText().toString();
+                        AjouterImageRealtimeDatabase(tmpDescription, uri.toString());
+                    }
+                });
+
             }
         }).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                 Toast toast = Toast.makeText(getApplicationContext(), "Picture archived!", Toast.LENGTH_SHORT);
                 toast.show();
+                //Afficher le bouton de nouveau, l'archivage est fini
+                findViewById(R.id.buttonConfirm).setVisibility(View.VISIBLE);
+                findViewById(R.id.loadingPanel).setVisibility(View.GONE);
             }
         });
     }
@@ -159,8 +219,37 @@ public class ArchiverActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
-    //private void AjouterImageRealtimeDatabase(Photo photo){
-    // Creation d'un objet photo
-    // Ajout de l'objet dans la realtime database
-    // }
+
+
+    private void AjouterImageRealtimeDatabase(String description, String link){
+        //Creation du time stamp qui servira de nom a la photo
+        Date date = new Date();
+        Long timestamp = date.getTime();
+        Log.v("DIM", "TIME STAMP: " + timestamp.toString());
+        //Creation d'une reference a la base de donne
+        DatabaseReference databasePhotosReference = FirebaseDatabase.getInstance().getReference();
+        //Recuperation des tags qui sont cochés
+        ArrayList<String> tmpTags = new ArrayList<>();
+        Log.v("DIM", "NUMBER OF CHILDREN IN LIST VIEW: " + mListView.getCount());
+        for(Tag tag:tags){
+            if(tag.isSelected)
+                tmpTags.add(tag.getTagName());
+    }
+        //Ajout des champs a la base de donne
+        databasePhotosReference.child(user.getUid() + "_Photos").child(timestamp.toString()).child("Description").setValue(description);
+        databasePhotosReference.child(user.getUid() + "_Photos").child(timestamp.toString()).child("Link").setValue(link);
+        for (String tag:tmpTags)
+            databasePhotosReference.child(user.getUid() + "_Photos").child(timestamp.toString()).child("Tags").child(tag).setValue(true);
+
+        //Reset tout pour etre pret a archiver de nouveau
+        EditText tmpEditText = findViewById(R.id.editTextDescription);
+        ImageView tmpImageView = findViewById(R.id.imageViewPreview);
+        tmpEditText.setText("");
+        tmpImageView.setImageDrawable(null);
+        for(Tag tag:tags){
+            tag.isSelected = false;
+        }
+    }
+
 }
+
