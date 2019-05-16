@@ -31,6 +31,13 @@
         android:layout_weight="1" />
 
     <Button
+        android:id="@+id/buttonTakePicture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onButtonTakePictureClicked"
+        android:text="Prendre une photo" />
+
+    <Button
         android:id="@+id/buttonSelect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

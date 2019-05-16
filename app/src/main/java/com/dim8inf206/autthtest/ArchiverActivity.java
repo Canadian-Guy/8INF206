@@ -3,10 +3,13 @@ package com.dim8inf206.autthtest;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,6 +38,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,7 +61,9 @@ public class ArchiverActivity extends AppCompatActivity {
     private Bitmap bitmap;
     private FirebaseStorage storage = FirebaseStorage.getInstance();
     private StorageReference storageReference = storage.getReference();
+    private String photoPath;
     static private int PICK_IMAGE_REQUEST = 2;
+    static private int IMAGE_CAPTURE_REQUEST = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +89,7 @@ public class ArchiverActivity extends AppCompatActivity {
                     //Log.v("DIM", "TAGS ACTIVITY: " + ds.getKey() + ": " + ds.getValue()+" and here is the current list" + tags.toString());
                 }
                 //Les tags ne devraient pas changer, mais s'ils changent, la liste sera rafraichie.
-                refreshListView();
+                adapter.notifyDataSetChanged();
                 Log.v("DIM", "***** LIST REFRESHED *****");
             }
 
@@ -143,6 +149,30 @@ public class ArchiverActivity extends AppCompatActivity {
         startActivityForResult(Intent.createChooser(intent, "Select Picture"),PICK_IMAGE_REQUEST);
     }
 
+    public void onButtonTakePictureClicked(View view){
+        //Fermer le clavier
+        View possiblyTheEditText = this.getCurrentFocus();
+        if (possiblyTheEditText != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(possiblyTheEditText.getWindowToken(), 0);
+        }
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(intent.resolveActivity(getPackageManager()) != null){
+            File photoFile = null;
+            try{
+                photoFile = CreateImageFile();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+            if(photoFile != null){
+                Uri uri = FileProvider.getUriForFile(this, "com.dim8inf206.android.fileprovider", photoFile);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                startActivityForResult(intent, IMAGE_CAPTURE_REQUEST);
+            }
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
@@ -157,6 +187,10 @@ public class ArchiverActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+        if(requestCode == IMAGE_CAPTURE_REQUEST && resultCode == RESULT_OK){
+            Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
+            imageView.setImageBitmap(bitmap);
+        }
     }
 
 
@@ -166,7 +200,6 @@ public class ArchiverActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Veuillez choisir une photo", Toast.LENGTH_SHORT).show();
             return;
         }
-
         //Fermer le clavier, solution trouvee sur https://stackoverflow.com/questions/1109022/close-hide-the-android-soft-keyboard
         View possiblyTheEditText = this.getCurrentFocus();
         if (possiblyTheEditText != null) {
@@ -184,6 +217,7 @@ public class ArchiverActivity extends AppCompatActivity {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
         storageReference = storage.getReference().child(user.getUid() + "/" + UUID.randomUUID() + ".jpg" );
+
         UploadTask uploadTask = storageReference.putBytes(data);
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
@@ -215,11 +249,12 @@ public class ArchiverActivity extends AppCompatActivity {
         });
     }
 
-    private void refreshListView(){
-        adapter.notifyDataSetChanged();
+    private File CreateImageFile() throws IOException{
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile("tmpImage", ".jpg", storageDir);
+        photoPath = image.getAbsolutePath();
+        return image;
     }
-
-
 
     private void AjouterImageRealtimeDatabase(String description, String link){
         //Creation du time stamp qui servira de nom a la photo
@@ -234,13 +269,18 @@ public class ArchiverActivity extends AppCompatActivity {
         for(Tag tag:tags){
             if(tag.isSelected)
                 tmpTags.add(tag.getTagName());
-    }
+        }
         //Ajout des champs a la base de donne
         databasePhotosReference.child(user.getUid() + "_Photos").child(timestamp.toString()).child("Description").setValue(description);
         databasePhotosReference.child(user.getUid() + "_Photos").child(timestamp.toString()).child("Link").setValue(link);
         for (String tag:tmpTags)
             databasePhotosReference.child(user.getUid() + "_Photos").child(timestamp.toString()).child("Tags").child(tag).setValue(true);
 
+        PreparerPourProchainArchivage();
+
+    }
+
+    private void PreparerPourProchainArchivage(){
         //Reset tout pour etre pret a archiver de nouveau
         EditText tmpEditText = findViewById(R.id.editTextDescription);
         ImageView tmpImageView = findViewById(R.id.imageViewPreview);
@@ -249,6 +289,7 @@ public class ArchiverActivity extends AppCompatActivity {
         for(Tag tag:tags){
             tag.isSelected = false;
         }
+        adapter.notifyDataSetChanged();
     }
 
 }
