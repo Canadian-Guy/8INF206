@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -48,8 +47,7 @@ import java.util.UUID;
 
 public class ArchiverActivity extends AppCompatActivity {
 
-    private ArrayList<Tag> tags = new ArrayList<>();
-    private ListView mListView;
+    private ArrayList<Tag> tags;
     private TagSelectionAdapter adapter;
     private ImageView imageView;
     private FirebaseUser user;
@@ -62,15 +60,14 @@ public class ArchiverActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.v("DIM", "***** ON CREATE *****");
+        tags = new ArrayList<>();
         setContentView(R.layout.activity_archiver);
         //references
         user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference databaseTagsReference = FirebaseDatabase.getInstance().getReference(user.getUid() + "_Tags");
 
-        mListView = findViewById(R.id.listViewTags);
+        ListView mListView = findViewById(R.id.listViewTags);
         storageReference.child(user.getUid()+"/test.png"); // DEBUG - TESTING
-        Log.v("DIM","User: " + user.getUid());  //DEBUG
         imageView = findViewById(R.id.imageViewPreview);
 
         ValueEventListener dataListener = new ValueEventListener() {
@@ -81,11 +78,8 @@ public class ArchiverActivity extends AppCompatActivity {
                 for (DataSnapshot ds : dataSnapshot.getChildren()){
                     tmpString = (String) ds.getValue(true);
                     tags.add(new Tag(tmpString));
-                    //Log.v("DIM", "TAGS ACTIVITY: " + ds.getKey() + ": " + ds.getValue()+" and here is the current list" + tags.toString());
                 }
-                //Les tags ne devraient pas changer, mais s'ils changent, la liste sera rafraichie.
                 adapter.notifyDataSetChanged();
-                Log.v("DIM", "***** LIST REFRESHED *****");
             }
 
             @Override
@@ -101,7 +95,6 @@ public class ArchiverActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 tags.get(i).switchSelection();
-                Log.v("DIM", "CHECKBOX " + tags.get(i).getTagName() + " SET TO " + tags.get(i).isSelected);
                 adapter.notifyDataSetChanged();
             }
         });
@@ -109,22 +102,19 @@ public class ArchiverActivity extends AppCompatActivity {
         if(savedInstanceState != null) {
             tags = savedInstanceState.getParcelableArrayList("tags");
         }
-        Log.v("DIM", "***** VALUE SHOULD HAVE BEEN RESTORED *****");
 
         super.onCreate(savedInstanceState);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState){
-        Log.v("DIM", "***** ON SAVE *****");
         //Sauvegarde de l'etat des tags
-            savedInstanceState.putParcelableArrayList("tags", tags);
+        savedInstanceState.putParcelableArrayList("tags", tags);
         super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState){
-        Log.v("DIM", "***** ON RESTORE *****");
         //Set chaque checkbox a son ancienne valeure
         tags = savedInstanceState.getParcelableArrayList("tags");
         super.onRestoreInstanceState(savedInstanceState);
@@ -185,6 +175,8 @@ public class ArchiverActivity extends AppCompatActivity {
         if(requestCode == IMAGE_CAPTURE_REQUEST && resultCode == RESULT_OK){
             Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
             imageView.setImageBitmap(bitmap);
+            //Supresseion de la photo crée pour sauver de l'espace sur l'appareil
+            File file = new File(photoPath);
         }
     }
 
@@ -240,6 +232,7 @@ public class ArchiverActivity extends AppCompatActivity {
                 //Afficher le bouton de nouveau, l'archivage est fini
                 findViewById(R.id.buttonConfirm).setVisibility(View.VISIBLE);
                 findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                Log.v("DIM", "Archivage completé!!");
             }
         });
     }
@@ -255,12 +248,10 @@ public class ArchiverActivity extends AppCompatActivity {
         //Creation du time stamp qui servira de nom a la photo
         Date date = new Date();
         Long timestamp = date.getTime();
-        Log.v("DIM", "TIME STAMP: " + timestamp.toString());
         //Creation d'une reference a la base de donne
         DatabaseReference databasePhotosReference = FirebaseDatabase.getInstance().getReference();
         //Recuperation des tags qui sont cochés
         ArrayList<String> tmpTags = new ArrayList<>();
-        Log.v("DIM", "NUMBER OF CHILDREN IN LIST VIEW: " + mListView.getCount());
         for(Tag tag:tags){
             if(tag.isSelected)
                 tmpTags.add(tag.getTagName());

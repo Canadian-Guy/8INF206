@@ -3,9 +3,7 @@ package com.dim8inf206.autthtest;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -25,22 +23,23 @@ import java.util.ArrayList;
 
 public class TagsActivity extends AppCompatActivity {
 
-    private ArrayList<Tag> tags = new ArrayList<>();
+    private ArrayList<Tag> tags;
     private FirebaseUser user;
     private DatabaseReference databaseReference;
-    private ListView mListView;
     private TagListAdapter adapter;
+    private ValueEventListener tagsListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tags);
 
+        tags = new ArrayList<>();
         user = FirebaseAuth.getInstance().getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference(user.getUid() + "_Tags");
-        mListView = findViewById(R.id.listViewTags);
+        ListView mListView = findViewById(R.id.listViewTags);
 
-        ValueEventListener dataListener = new ValueEventListener() {
+        tagsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String tmpString;
@@ -48,7 +47,6 @@ public class TagsActivity extends AppCompatActivity {
                 for (DataSnapshot ds : dataSnapshot.getChildren()){
                     tmpString = (String) ds.getValue(true);
                     tags.add(new Tag(tmpString));
-                    Log.v("DIM", "TAGS ACTIVITY: " + ds.getKey() + " " + ds.getValue()+" and here is the current list" + tags.toString());
                 }
                 refreshListView();
             }
@@ -59,18 +57,15 @@ public class TagsActivity extends AppCompatActivity {
             }
         };
 
-        tags.add(new Tag("This tag should't be the only one visible"));
-
-        databaseReference.addValueEventListener(dataListener);
+        databaseReference.addValueEventListener(tagsListener);
         adapter = new TagListAdapter(this, R.layout.adapter_gestion_tags, tags);
         mListView.setAdapter(adapter);
+    }
 
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.v("DIM", "ITEM CLICKED IS : " + adapterView.getItemAtPosition(i) + "AT POSITION: " + i);
-            }
-        });
+    @Override
+    protected void onStop(){
+        databaseReference.removeEventListener(tagsListener);
+        super.onStop();
     }
 
     private void refreshListView(){

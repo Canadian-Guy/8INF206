@@ -8,4 +8,5 @@
     <string name="adapterBtnDelete">Delete</string>
     <string name="btnSelectImage">Choisir une image</string>
     <string name="btnConfirmer">Archiver</string>
+    <string name="button_connexion">Connexion</string>
 </resources>

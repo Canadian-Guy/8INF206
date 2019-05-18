@@ -3,7 +3,7 @@ package com.dim8inf206.autthtest;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.Toast;
+import android.view.View;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -52,10 +52,24 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 this.finish();
 
-                // ...
-            } else {
-
             }
         }
+    }
+
+    public void Loggin(View view){
+        // Choose authentication providers
+        List<AuthUI.IdpConfig> providers = Arrays.asList(
+                new AuthUI.IdpConfig.EmailBuilder().build(),
+                new AuthUI.IdpConfig.AnonymousBuilder().build(),
+                new AuthUI.IdpConfig.FacebookBuilder().build()
+        );
+
+// Create and launch sign-in intent
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .build(),
+                RC_SIGN_IN);
     }
 }
