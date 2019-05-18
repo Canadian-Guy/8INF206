@@ -40,7 +40,7 @@
         android:progressTint="@color/common_google_signin_btn_text_dark_focused" />
 
     <ListView
-        android:id="@+id/listView"
+        android:id="@+id/listViewTags"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

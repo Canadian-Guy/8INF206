@@ -1,14 +1,12 @@
 package com.dim8inf206.autthtest;
 
-import android.net.Uri;
+
 
 public class Photo {
     private String description;
-    private Uri link;
+    private String link;
 
-    public Photo(){}
-
-    public Photo(String description, Uri link) {
+    public Photo(String description, String link) {
         this.description = description;
         this.link = link;
     }
@@ -17,7 +15,7 @@ public class Photo {
         this.description = description;
     }
 
-    public void setLink(Uri link) {
+    public void setLink(String link) {
         this.link = link;
     }
 
@@ -25,7 +23,9 @@ public class Photo {
         return description;
     }
 
-    public Uri getLink() {
+    public String getLink() {
         return link;
     }
+
+
 }

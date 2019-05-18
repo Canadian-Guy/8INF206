@@ -26,7 +26,7 @@ import java.util.ArrayList;
 public class TagsActivity extends AppCompatActivity {
 
     private ArrayList<Tag> tags = new ArrayList<>();
-    FirebaseUser user;
+    private FirebaseUser user;
     private DatabaseReference databaseReference;
     private ListView mListView;
     private TagListAdapter adapter;
@@ -38,7 +38,7 @@ public class TagsActivity extends AppCompatActivity {
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference(user.getUid() + "_Tags");
-        mListView = findViewById(R.id.listView);
+        mListView = findViewById(R.id.listViewTags);
 
         ValueEventListener dataListener = new ValueEventListener() {
             @Override

@@ -44,12 +44,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
-/*TODO:
-*
-* S'assurer de bloquer les caracteres interdits
-* dans la boite de texte pour la description
-*
-* */
+
 
 public class ArchiverActivity extends AppCompatActivity {
 
