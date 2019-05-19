@@ -92,7 +92,7 @@ public class RecupererActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-    
+
     @Override
     protected void onPause(){
         if(tagsListener != null && databaseReferenceTags != null) {

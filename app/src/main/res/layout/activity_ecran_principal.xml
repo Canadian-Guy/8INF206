@@ -23,7 +23,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginBottom="8dp"
         android:onClick="Archiver"
-        android:text="Archiver"
+        android:text="@string/btn_archiver"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -34,7 +34,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:onClick="Recuperer"
-        android:text="Recuperer"
+        android:text="@string/btn_recuperer"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 </android.support.constraint.ConstraintLayout>

@@ -35,7 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="onButtonTakePictureClicked"
-        android:text="Prendre une photo" />
+        android:text="@string/btn_prendre_une_photo" />
 
     <Button
         android:id="@+id/buttonSelect"
