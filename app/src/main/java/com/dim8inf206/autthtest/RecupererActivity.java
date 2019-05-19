@@ -92,9 +92,9 @@ public class RecupererActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-
+    
     @Override
-    protected void onStop(){
+    protected void onPause(){
         if(tagsListener != null && databaseReferenceTags != null) {
             databaseReferenceTags.removeEventListener(tagsListener);
             Log.v("DIM", "Removed listener on tags reference");
@@ -103,7 +103,7 @@ public class RecupererActivity extends AppCompatActivity {
             databaseReferencePhotos.removeEventListener(photosListener);
             Log.v("DIM", "Removed listener on photos reference");
         }
-        super.onStop();
+        super.onPause();
     }
 
     @Override
