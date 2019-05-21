@@ -71,10 +71,14 @@ public class RecupererActivity extends AppCompatActivity {
         photoListAdapter = new PhotoListAdapter(this, R.layout.adapter_photos, photos);
         mListViewPhotos.setAdapter(photoListAdapter);
 
-        FillTagsList();
+
+        if(savedInstanceState == null)  //Puisqu'on garde les tags en mémoire
+            FillTagsList();
         SetTagsListListener();
         FillImageList();
         SetImageClickListener();
+
+
 
         super.onCreate(savedInstanceState);
     }
@@ -115,8 +119,8 @@ public class RecupererActivity extends AppCompatActivity {
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState){
-        tags = savedInstanceState.getParcelableArrayList("tags");
-        selectedTags = savedInstanceState.getStringArrayList("selectedTags");
+        //tags = savedInstanceState.getParcelableArrayList("tags");
+        //selectedTags = savedInstanceState.getStringArrayList("selectedTags");
         super.onRestoreInstanceState(savedInstanceState);
     }
 
@@ -170,10 +174,12 @@ public class RecupererActivity extends AppCompatActivity {
     }
 
     private void FillImageList(){
+        Log.v("DIM", "FILL IMAGE LIST CALLED!!!!");
         photosListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 photos.clear();
+                Log.v("DIM", "DATA CHANGED !!!!! RECUPERE ACTIVITY!");
                 if(!selectedTags.isEmpty()) {   //If a filter is applied, only show some photos
                     for(DataSnapshot ds : dataSnapshot.getChildren()){
                         boolean mustShow = true;
@@ -183,15 +189,15 @@ public class RecupererActivity extends AppCompatActivity {
                             }
                         }
                         if(mustShow){
-                            photos.add(new Photo(ds.getKey(), Objects.requireNonNull(ds.child("Description").getValue()).toString(),
-                                     Objects.requireNonNull(ds.child("Link").getValue()).toString()));
+                            photos.add(new Photo(ds.getKey(), ds.child("Description").getValue().toString(),
+                                     ds.child("Link").getValue().toString()));
                         }
                     }
                 }
                 else{
                     for(DataSnapshot ds : dataSnapshot.getChildren()){
-                            photos.add(new Photo(ds.getKey(), Objects.requireNonNull(ds.child("Description").getValue()).toString(),
-                                    Objects.requireNonNull(ds.child("Link").getValue()).toString()));
+                            photos.add(new Photo(ds.getKey(), ds.child("Description").getValue().toString(),
+                                    ds.child("Link").getValue().toString()));
                     }
                 }
                 photoListAdapter.notifyDataSetChanged();
@@ -209,7 +215,7 @@ public class RecupererActivity extends AppCompatActivity {
         tagsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                //tags.clear();
+                tags.clear();
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     tags.add(new Tag((String) ds.getValue()));
                 }

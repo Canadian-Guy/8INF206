@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.Rotate;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -65,7 +66,7 @@ public class PhotoListAdapter extends ArrayAdapter<Photo> {
         });
 
         tvDescription.setText(description);
-        Glide.with(mContext).load(link).into(ivThumbnail);
+        Glide.with(mContext).load(link).transform(new Rotate(90)).into(ivThumbnail);
         return convertView;
     }
 

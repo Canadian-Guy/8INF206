@@ -9,16 +9,15 @@
         android:id="@+id/textViewTagName"
         android:layout_width="0px"
         android:layout_height="wrap_content"
-        android:layout_weight="3"
-        android:text=""
-        android:clickable="false"/>
+        android:layout_weight="1"
+        android:clickable="false"
+        android:text="" />
 
     <Button
         android:id="@+id/btnDelete"
-        android:layout_width="0px"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="@string/adapterBtnDelete"
-        android:onClick="deleteButtonClick"/>
+        android:onClick="deleteButtonClick"
+        android:text="@string/adapterBtnDelete" />
 
 </LinearLayout>

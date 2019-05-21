@@ -13,4 +13,7 @@
     <string name="btn_archiver">Archiver</string>
     <string name="btn_recuperer">Récuperer</string>
     <string name="btn_prendre_une_photo">Prendre une photo</string>
+    <string name="Instructions1">- Appuyez sur l\'icone en haut à droite de votre écran pour créer ou supprimer des tags.</string>
+    <string name="Instructions2">- Appuyez sur le bouton Archiver, en bas à gauche de votre écran, pour archiver une image.</string>
+    <string name="Instructions3">- Appuyez sur le bouton Récupérer, en bas à droite de votre écran, pour récupérer ou supprimer des images.</string>
 </resources>

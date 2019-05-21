@@ -64,8 +64,15 @@ public class TagsActivity extends AppCompatActivity {
 
     @Override
     protected void onStop(){
-        databaseReference.removeEventListener(tagsListener);
+        if(databaseReference != null && tagsListener != null)
+            databaseReference.removeEventListener(tagsListener);
         super.onStop();
+    }
+
+    protected void onPause(){
+        if(databaseReference != null && tagsListener != null)
+            databaseReference.removeEventListener(tagsListener);
+        super.onPause();
     }
 
     private void refreshListView(){
@@ -81,8 +88,7 @@ public class TagsActivity extends AppCompatActivity {
 
     public void AddTagButtonClick(View view){
         EditText editText = findViewById(R.id.editTextAddTag);
-        //Big if to make sure that the entered text does not make the the app crash
-
+        //Gros "if" pour s'assurer que le tag ne contient pas de caracteres interdits
         if(editText.getText().toString().matches("") || editText.getText().toString().contains("$") || editText.getText().toString().contains("/")
         || editText.getText().toString().contains(".") || editText.getText().toString().contains("#") || editText.getText().toString().contains("]")
         || editText.getText().toString().contains("[")) {
