@@ -16,28 +16,26 @@
             android:id="@+id/editTextAddTag"
             android:layout_width="0px"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="3"
             android:ems="10"
             android:inputType="textPersonName" />
 
-        <Button
-            android:id="@+id/button5"
+        <ImageButton
+            android:id="@+id/buttonAjouter"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="AddTagButtonClick"
-            android:text="@string/btn_ajouter" />
+            android:background="@drawable/custom_selector"
+            android:src="@drawable/ic_add_box_white_48dp"/>
 
     </LinearLayout>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
+    <ImageView
+        android:id="@+id/imageView"
         android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:max="1"
-        android:progress="1"
-        android:progressTint="@color/common_google_signin_btn_text_dark_focused" />
+        android:layout_height="1dp"
+        app:srcCompat="@android:color/black" />
 
     <ListView
         android:id="@+id/listViewTags"

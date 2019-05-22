@@ -12,12 +12,14 @@
         android:id="@+id/textViewDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1" />
+        android:layout_weight="3" />
 
-    <Button
+    <ImageButton
         android:id="@+id/buttonDelete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/custom_selector"
         android:focusable="false"
-        android:text="@string/adapterBtnDelete" />
+        android:src="@drawable/ic_delete_white_48dp" />
 </LinearLayout>

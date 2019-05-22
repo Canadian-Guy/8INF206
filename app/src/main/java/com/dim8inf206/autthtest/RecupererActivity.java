@@ -71,14 +71,13 @@ public class RecupererActivity extends AppCompatActivity {
         photoListAdapter = new PhotoListAdapter(this, R.layout.adapter_photos, photos);
         mListViewPhotos.setAdapter(photoListAdapter);
 
-
-        if(savedInstanceState == null)  //Puisqu'on garde les tags en mémoire
+        if(savedInstanceState == null) {  //Puisqu'on garde les tags en mémoire et les photos en memoire
             FillTagsList();
+            FillImageList();
+        }
+
         SetTagsListListener();
-        FillImageList();
         SetImageClickListener();
-
-
 
         super.onCreate(savedInstanceState);
     }
@@ -160,6 +159,11 @@ public class RecupererActivity extends AppCompatActivity {
         mListViewTags.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //Pour éviter qu'il n'y ai plus qu'un listener pour les photos, puisqu'on appel FillImageList().
+                if(photosListener != null && databaseReferencePhotos != null) {
+                    databaseReferencePhotos.removeEventListener(photosListener);
+                    Log.v("DIM", "Removed listener on photos reference");
+                }
                 tags.get(i).switchSelection();
                 if(tags.get(i).isSelected){
                     selectedTags.add(tags.get(i).getTagName());
@@ -168,6 +172,7 @@ public class RecupererActivity extends AppCompatActivity {
                     selectedTags.remove(tags.get(i).getTagName());
                 }
                 tagSelectionAdapter.notifyDataSetChanged();
+                //Pour rafraichire la liste de photos avec le nouveau filtre.
                 FillImageList();
             }
         });
@@ -175,6 +180,7 @@ public class RecupererActivity extends AppCompatActivity {
 
     private void FillImageList(){
         Log.v("DIM", "FILL IMAGE LIST CALLED!!!!");
+
         photosListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

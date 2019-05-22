@@ -48,7 +48,7 @@ public class TagsActivity extends AppCompatActivity {
                     tmpString = (String) ds.getValue(true);
                     tags.add(new Tag(tmpString));
                 }
-                refreshListView();
+                adapter.notifyDataSetChanged();
             }
 
             @Override
@@ -69,14 +69,11 @@ public class TagsActivity extends AppCompatActivity {
         super.onStop();
     }
 
+    @Override
     protected void onPause(){
         if(databaseReference != null && tagsListener != null)
             databaseReference.removeEventListener(tagsListener);
         super.onPause();
-    }
-
-    private void refreshListView(){
-        adapter.notifyDataSetChanged();
     }
 
     public void deleteButtonClick(View view) {
