@@ -69,7 +69,7 @@ public class PhotoListAdapter extends ArrayAdapter<Photo> {
         });
 
         tvDescription.setText(description);
-        Glide.with(mContext).load(link).transform(new Rotate(90)).into(ivThumbnail);
+        Glide.with(mContext).load(link).into(ivThumbnail);
         return convertView;
     }
 

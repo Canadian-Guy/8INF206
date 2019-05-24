@@ -71,11 +71,10 @@ public class RecupererActivity extends AppCompatActivity {
         photoListAdapter = new PhotoListAdapter(this, R.layout.adapter_photos, photos);
         mListViewPhotos.setAdapter(photoListAdapter);
 
-        if(savedInstanceState == null) {  //Puisqu'on garde les tags en mémoire et les photos en memoire
+        if(savedInstanceState == null)  //Puisqu'on garde les tags en mémoire
             FillTagsList();
-            FillImageList();
-        }
 
+        FillImageList();
         SetTagsListListener();
         SetImageClickListener();
 
@@ -136,7 +135,6 @@ public class RecupererActivity extends AppCompatActivity {
                 loadingPanel.setVisibility(View.VISIBLE);
                 Glide.with(getApplicationContext())
                         .load(tmpPhoto.getLink())
-                        .transform(new Rotate(90))
                         .listener(new RequestListener<Drawable>() {
                             @Override
                             public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
@@ -166,17 +167,23 @@ public class ArchiverActivity extends AppCompatActivity {
             Uri uri = data.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                // Log.d(TAG, String.valueOf(bitmap));
-                imageView.setImageBitmap(bitmap);
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
+                Bitmap rotatedImage = Bitmap.createBitmap(bitmap, 0 , 0, bitmap.getHeight(), bitmap.getHeight(), matrix, true);
+                imageView.setImageBitmap(rotatedImage);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         if(requestCode == IMAGE_CAPTURE_REQUEST && resultCode == RESULT_OK){
             Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
-            imageView.setImageBitmap(bitmap);
+            Matrix matrix = new Matrix();
+            matrix.postRotate(90);
+            Bitmap rotatedImage = Bitmap.createBitmap(bitmap, 0 , 0, bitmap.getHeight(), bitmap.getHeight(), matrix, true);
+            imageView.setImageBitmap(rotatedImage);
             //Supresseion de la photo crée pour sauver de l'espace sur l'appareil
             File file = new File(photoPath);
+            file.delete();
         }
     }
 

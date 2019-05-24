@@ -16,8 +16,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class EcranPrincipal extends AppCompatActivity {
 
-    private Toolbar mTopToolbar;
-    FirebaseUser user;
+    private FirebaseUser user;
 
 
     @Override
@@ -25,7 +24,7 @@ public class EcranPrincipal extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ecran_principal);
 
-        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        Toolbar mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(mTopToolbar);
         user = FirebaseAuth.getInstance().getCurrentUser();
     }
