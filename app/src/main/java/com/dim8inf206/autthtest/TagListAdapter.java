@@ -22,7 +22,6 @@ public class TagListAdapter extends ArrayAdapter<Tag> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         String tagName = getItem(position).getTagName();
-        Tag tag = new Tag(tagName);
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
         convertView = inflater.inflate(mResource, parent, false);
