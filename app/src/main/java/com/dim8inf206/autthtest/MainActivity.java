@@ -13,6 +13,7 @@ import com.google.firebase.auth.FirebaseUser;
 import java.util.Arrays;
 import java.util.List;
 
+//Le code dans cette classe a été pris dans la documentation de FirebaseAuthentication.
 public class MainActivity extends AppCompatActivity {
 
    private static final int RC_SIGN_IN = 123;
@@ -29,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
                 new AuthUI.IdpConfig.FacebookBuilder().build()
                 );
 
-// Create and launch sign-in intent
+        // Create and launch sign-in intent
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 new AuthUI.IdpConfig.FacebookBuilder().build()
         );
 
-// Create and launch sign-in intent
+        // Create and launch sign-in intent
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()

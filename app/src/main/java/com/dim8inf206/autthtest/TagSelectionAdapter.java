@@ -42,9 +42,8 @@ public class TagSelectionAdapter extends ArrayAdapter<Tag> {
         return convertView;
     }
 
-
-
-    static class ViewHolder{
+    //Essaie d'utilisation du paton ViewHolder
+    static private class ViewHolder{
         private CheckBox tagCheckBox;
     }
 }

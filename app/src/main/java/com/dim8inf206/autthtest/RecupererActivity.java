@@ -15,7 +15,6 @@ import android.widget.ListView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.load.resource.bitmap.Rotate;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.firebase.auth.FirebaseAuth;
@@ -64,8 +63,10 @@ public class RecupererActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         mListViewTags = findViewById(R.id.listViewTags);
         mListViewPhotos = findViewById(R.id.listViewPhotos);
+        //Creation des références sur la base de donnée et sur le Storage.
         databaseReferencePhotos = FirebaseDatabase.getInstance().getReference(Objects.requireNonNull(user).getUid() + "_Photos");
         databaseReferenceTags = FirebaseDatabase.getInstance().getReference(user.getUid() + "_Tags");
+        //Creation et application des adaptateurs
         tagSelectionAdapter = new TagSelectionAdapter(this, R.layout.adapter_selection_tags, tags);
         mListViewTags.setAdapter(tagSelectionAdapter);
         photoListAdapter = new PhotoListAdapter(this, R.layout.adapter_photos, photos);
@@ -83,6 +84,7 @@ public class RecupererActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed(){
+        //Si une image est ouverte, on la ferme au lieu de quitter.
         if(imageView.getVisibility() != View.GONE){
             imageView.setImageDrawable(null);
             imageView.setVisibility(View.GONE);
@@ -91,12 +93,14 @@ public class RecupererActivity extends AppCompatActivity {
             loadingPanel.setVisibility(View.GONE);
         }
         else{
+            //Si aucune image n'est ouverte, l'utilisateur veut quitter.
             super.onBackPressed();
         }
     }
 
     @Override
     protected void onPause(){
+        //Retrait des listeners quand on quite cet écran
         if(tagsListener != null && databaseReferenceTags != null) {
             databaseReferenceTags.removeEventListener(tagsListener);
             Log.v("DIM", "Removed listener on tags reference");
@@ -110,6 +114,7 @@ public class RecupererActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState){
+        //On sauvegarde les tags ainsi que les tags selectionnés
         savedInstanceState.putParcelableArrayList("tags", tags);
         savedInstanceState.putStringArrayList("selectedTags", selectedTags);
         super.onSaveInstanceState(savedInstanceState);
@@ -117,14 +122,15 @@ public class RecupererActivity extends AppCompatActivity {
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState){
-        //tags = savedInstanceState.getParcelableArrayList("tags");
-        //selectedTags = savedInstanceState.getStringArrayList("selectedTags");
+        tags = savedInstanceState.getParcelableArrayList("tags");
+        selectedTags = savedInstanceState.getStringArrayList("selectedTags");
         super.onRestoreInstanceState(savedInstanceState);
     }
 
+    //Quand on clique sur une image dans la liste, cache les deux listView et on affiche une
+    //imageView contenant l'image selectionnée à la place. Si le telechargement ne se fait pas
+    //en une fraction de seconde, un indicateur de chargement est affiché.
     private void SetImageClickListener(){
-        // Ajouter une icone de chargement https://stackoverflow.com/questions/26054420/set-visibility-of-progress-bar-gone-on-completion-of-image-loading-using-glide-l
-
         mListViewPhotos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -153,6 +159,8 @@ public class RecupererActivity extends AppCompatActivity {
         });
     }
 
+    //Quand un tag est cliqué, on switch son isSelected et on ajoute son nom dans la liste
+    //des tags selectionnés, qui sert de filtre lors de la récupération des photos.
     private void SetTagsListListener() {
         mListViewTags.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -170,21 +178,21 @@ public class RecupererActivity extends AppCompatActivity {
                     selectedTags.remove(tags.get(i).getTagName());
                 }
                 tagSelectionAdapter.notifyDataSetChanged();
-                //Pour rafraichire la liste de photos avec le nouveau filtre.
+                //Pour rafraichir la liste de photos avec le nouveau filtre.
                 FillImageList();
             }
         });
     }
 
     private void FillImageList(){
-        Log.v("DIM", "FILL IMAGE LIST CALLED!!!!");
-
         photosListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //Quand on récupere des photos dans la base de données, on purge l'ancienne liste de photos.
                 photos.clear();
-                Log.v("DIM", "DATA CHANGED !!!!! RECUPERE ACTIVITY!");
-                if(!selectedTags.isEmpty()) {   //If a filter is applied, only show some photos
+                //S'il y a un filste, on ne récupere que certaines photos.
+                if(!selectedTags.isEmpty()) {
+                    //Pour chaque photo, on compare la photo avec chaque tag pour savoir si on a la récupere ou non.
                     for(DataSnapshot ds : dataSnapshot.getChildren()){
                         boolean mustShow = true;
                         for(String s : selectedTags) {
@@ -198,6 +206,7 @@ public class RecupererActivity extends AppCompatActivity {
                         }
                     }
                 }
+                //S'il n'y a pas de filtre, on affiche toutes les photos.
                 else{
                     for(DataSnapshot ds : dataSnapshot.getChildren()){
                             photos.add(new Photo(ds.getKey(), ds.child("Description").getValue().toString(),
@@ -215,10 +224,12 @@ public class RecupererActivity extends AppCompatActivity {
         databaseReferencePhotos.addValueEventListener(photosListener);
     }
 
+    //On récuperer les tags de l'utilisateur pour pouvoir les afficher et les utiliser.
     private void FillTagsList(){
         tagsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //Si la liste de tags contenait déjà quelquechose, on purge, car on s'enva chercher tous les tags sur la base de données.
                 tags.clear();
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     tags.add(new Tag((String) ds.getValue()));

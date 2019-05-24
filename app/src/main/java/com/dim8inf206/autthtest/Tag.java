@@ -20,14 +20,11 @@ public class Tag implements Parcelable {
         isSelected = in.readByte() != 0; //== true if byte != 0
     }
 
-    public void setTagName(String tagName) {
-        this.tagName = tagName;
-    }
-
     public String getTagName() {
         return tagName;
     }
 
+    //Méthode appelée lorsqu'un tag est selectionné
     public void switchSelection(){
         if(isSelected)
             isSelected = false;
@@ -51,6 +48,7 @@ public class Tag implements Parcelable {
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(tagName);
+        //Permet de sauvegarder un boolean
         parcel.writeByte((byte) (isSelected ? 1 : 0)); //== true if != 0
     }
 

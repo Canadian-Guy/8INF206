@@ -66,14 +66,8 @@ public class TagsActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop(){
-        if(databaseReference != null && tagsListener != null)
-            databaseReference.removeEventListener(tagsListener);
-        super.onStop();
-    }
-
-    @Override
     protected void onPause(){
+        //Retrait du listener lorsqu'on quitte cet écran
         if(databaseReference != null && tagsListener != null)
             databaseReference.removeEventListener(tagsListener);
         super.onPause();
@@ -87,6 +81,7 @@ public class TagsActivity extends AppCompatActivity {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        //Quand on accepte la supression, on met le champ correspondant au tag dans la base de donnée à null
                         LinearLayout parent = (LinearLayout)theView.getParent();
                         TextView textView = (TextView) parent.getChildAt(0);
                         databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -108,9 +103,12 @@ public class TagsActivity extends AppCompatActivity {
             toast.show();
         }
         else{
+            //Si le nom du tag est correct, on l'ajoute à la bse de donnée avec, comme clée, sa valeure.
+            //On évite ainsi les doublons.
             databaseReference = FirebaseDatabase.getInstance().getReference();
             databaseReference.child(user.getUid() + "_Tags/" + editText.getText().toString()).setValue(editText.getText().toString());
         }
+        //On réinitialise le champ pour être pret à ajouter un autre tag
         editText.setText("");
     }
 }

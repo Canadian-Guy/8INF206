@@ -61,16 +61,15 @@ public class ArchiverActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        tags = new ArrayList<>();
         setContentView(R.layout.activity_archiver);
-        //references
+
+        tags = new ArrayList<>();
         user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference databaseTagsReference = FirebaseDatabase.getInstance().getReference(user.getUid() + "_Tags");
-
         ListView mListView = findViewById(R.id.listViewTags);
-        storageReference.child(user.getUid()+"/test.png"); // DEBUG - TESTING
         imageView = findViewById(R.id.imageViewPreview);
 
+        //Récupération des tags dans la base de donnée
         ValueEventListener dataListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -88,8 +87,9 @@ public class ArchiverActivity extends AppCompatActivity {
 
             }
         };
-
+        //Ajout pour single value, les tags ne peuvent pas changer à partir d'ici.
         databaseTagsReference.addListenerForSingleValueEvent(dataListener);
+        //Creation de l'adaptateur et ajout du click listener qui gere la selection des tags.
         adapter = new TagSelectionAdapter(this, R.layout.adapter_selection_tags, tags);
         mListView.setAdapter(adapter);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -123,12 +123,13 @@ public class ArchiverActivity extends AppCompatActivity {
 
 
     public void onButtonSelectClicked(View view){
-        //Fermer le clavier, solution trouvee sur https://stackoverflow.com/questions/1109022/close-hide-the-android-soft-keyboard
+        //Fermer le clavier s'il est ouvert, solution trouvée sur https://stackoverflow.com/questions/1109022/close-hide-the-android-soft-keyboard
         View possiblyTheEditText = this.getCurrentFocus();
         if (possiblyTheEditText != null) {
             InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(possiblyTheEditText.getWindowToken(), 0);
         }
+        //Creation d'une intention pour aller chercher une photo sur le telephone
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -136,7 +137,7 @@ public class ArchiverActivity extends AppCompatActivity {
     }
 
     public void onButtonTakePictureClicked(View view){
-        //Fermer le clavier
+        //Fermer le clavier s'il est ouvert
         View possiblyTheEditText = this.getCurrentFocus();
         if (possiblyTheEditText != null) {
             InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -144,9 +145,11 @@ public class ArchiverActivity extends AppCompatActivity {
         }
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        //Vérification que l'appareil peut prendre une photo
         if(intent.resolveActivity(getPackageManager()) != null){
             File photoFile = null;
             try{
+                //Création d'une endroit pour stocker la photo sur l'appareil (Car on ne veut pas stocker une Thumbnail dans le cloud)
                 photoFile = CreateImageFile();
             } catch (IOException e){
                 e.printStackTrace();
@@ -163,6 +166,7 @@ public class ArchiverActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
 
+        //Si l'image est selectionnée dans la gallerie.
         if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK){
             Uri uri = data.getData();
             try {
@@ -175,9 +179,12 @@ public class ArchiverActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+        //Si l'image vient d'être prise.
         if(requestCode == IMAGE_CAPTURE_REQUEST && resultCode == RESULT_OK){
             Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
             Matrix matrix = new Matrix();
+            //Rotation de l'image, car les images en mode portait (Commun pour des photos de factures)
+            //sont sur le côté lorsqu'elles sont mises dans une imageView.
             matrix.postRotate(90);
             Bitmap rotatedImage = Bitmap.createBitmap(bitmap, 0 , 0, bitmap.getHeight(), bitmap.getHeight(), matrix, true);
             imageView.setImageBitmap(rotatedImage);
@@ -244,6 +251,8 @@ public class ArchiverActivity extends AppCompatActivity {
         });
     }
 
+    //Methode pour créer un File pour prendre une photo et la stocker. Code trouvé sur
+    //Android Developper.
     private File CreateImageFile() throws IOException{
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile("tmpImage", ".jpg", storageDir);
@@ -274,7 +283,7 @@ public class ArchiverActivity extends AppCompatActivity {
     }
 
     private void PreparerPourProchainArchivage(){
-        //Reset tout pour etre pret a archiver de nouveau
+        //Reset tout pour être prêt à archiver de nouveau
         EditText tmpEditText = findViewById(R.id.editTextDescription);
         ImageView tmpImageView = findViewById(R.id.imageViewPreview);
         tmpEditText.setText("");

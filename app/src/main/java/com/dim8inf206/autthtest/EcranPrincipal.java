@@ -16,9 +16,6 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class EcranPrincipal extends AppCompatActivity {
 
-    private FirebaseUser user;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,11 +23,11 @@ public class EcranPrincipal extends AppCompatActivity {
 
         Toolbar mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(mTopToolbar);
-        user = FirebaseAuth.getInstance().getCurrentUser();
     }
 
     @Override
     public void onBackPressed(){
+        //Boite de dialogue pour éviter de quiter par accident.
         new AlertDialog.Builder(this)
                 .setTitle("Êtes-vous sûr de vouloir quitter?")
                 .setMessage("Êtes-vous sûr de vouloir quitter?")
@@ -52,7 +49,7 @@ public class EcranPrincipal extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
-
+        //Si on appuie sur l'icone de la toolbar, on va sur l'écran de gestion des tags
         if(id == R.id.action_favorite){
             Intent intent = new Intent(this, TagsActivity.class);
             startActivity(intent);
@@ -61,11 +58,13 @@ public class EcranPrincipal extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //Methode pour aller à l'écran de recuperation
     public void Recuperer(View view){
         Intent intent = new Intent(this, RecupererActivity.class);
         startActivity(intent);
     }
 
+    //Methode pour aller à l'écran d'archivage
     public void Archiver(View view){
         Intent intent = new Intent(this, ArchiverActivity.class);
         startActivity(intent);
